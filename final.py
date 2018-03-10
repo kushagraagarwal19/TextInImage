@@ -67,10 +67,12 @@ def insertImage(radioValue,fileName):
         decImagePath = fileName
 
 def openfiledialog():
-    # filedialog.askopenfilename()
     filename = filedialog.askopenfilename(title = "Select file")
+    base=os.path.basename(filename)
+    base = os.path.splitext(base)[0]
     global filedirectory
     filedirectory = os.path.dirname(filename)
+    filedirectory = filedirectory + '/' + base
     insertImage(radioValue, filename)
 
 def processImage(whattodo):
@@ -78,22 +80,16 @@ def processImage(whattodo):
         stringToEncrypt = str(message.get('1.0', 'end'))
 
         asciiValueString = []
-        # print(type(asciiValueString))
-        # j = 0
         for c in stringToEncrypt:
             asciiValueString.append(ord(c))
 
-        # print("the value of asciiValueString is " + str(asciiValueString))
-
         fileName = encImagePath
-        # print ('filename is ' + fileName)
         newPhoto = Image.open(fileName)
         newPhoto = newPhoto.convert(mode = "RGBA")
         x,y = newPhoto.size
         a = newPhoto.getdata()
         b = list(a)
         c = [list(elem) for elem in b]
-        # print(c[:10])
         i = 0
         for i in range(len(asciiValueString) + 1):
             # print('entered')
@@ -104,28 +100,20 @@ def processImage(whattodo):
             c[i][3] = asciiValueString[i-1]
             i = i+1
             if(i == len(asciiValueString)):
-                # print('boss')
                 c[len(asciiValueString)] = [0,0,0,0]
                 break
-    
-        # print (c[:len(asciiValueString)+ 1])
 
         d = [tuple(l) for l in c]
-        # print(d[:10])
         new_im = Image.new("RGBA", (x,y))
         new_im.putdata(d)
-        x = filedirectory + '/decrypted.png'
+        x = filedirectory + '_encrypted.png'
         new_im.save(x)
-        # /Users/kushagraagarwal/Documents/GITRepositoriesMine/TextInImage/dist/final.app/Contents/Resources/decrypted.png
     else:
         fileName = decImagePath
         newPhoto = Image.open(fileName)
         newPhoto = newPhoto.convert(mode = "RGBA")
         a = newPhoto.getdata()
         b = list(a)
-
-        # print (b[:10])
-        # print("The hidden is : " + str(b[0][3]))
 
         if ((b[0][0] + b[0][1] + b[0][2] + b[0][3]) != 0):
             message.replace('1.0','end', 'OOPS! You should use the image which has been encrypted with this!')
@@ -143,19 +131,13 @@ def processImage(whattodo):
             i = i+1
         s = ''.join(chr(i) for i in string)
 
-        # print(s)
-
         hiddenMessage = "The hidden message from the image is " + "'" + s + "'"
         message.replace('1.0','end', hiddenMessage)
-        # print(s[:20])
-        # print(len(s[:20]))
 
 uploadButton = ttk.Button(mainframe, text='Upload', command = lambda: openfiledialog())
 uploadButton.grid(column=2, row=4, columnspan=2)
 
 proceedButton = ttk.Button(mainframe, text='Hide/Unhide', command = lambda : processImage(radioValue.get()))
 proceedButton.grid(column=2, row=2, columnspan=2)
-
-# for child in mainframe.winfo_children(): child.grid_configure(padx=5, pady=5)
 
 root.mainloop()
